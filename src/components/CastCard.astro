@@ -29,6 +29,8 @@ interface Props {
   game?: "gta-vi" | "gta-online" | "gta-v" | "gta-sa" | "gta-vc" | "gta-iv" | "gta-iii" | "franchise";
   /** Confirmation tier. Defaults to confirmed. */
   tier?: "confirmed" | "reported" | "predicted";
+  /** Optional one-line confirmed detail shown under the role */
+  note?: string;
 }
 
 const {
@@ -38,6 +40,7 @@ const {
   video,
   game = "gta-vi",
   tier = "confirmed",
+  note,
 } = Astro.props;
 
 const isProtagonist = role === "Protagonist";
@@ -76,7 +79,7 @@ const hasClip       = !!video;
     <!-- Bottom gradient -->
     <div
       class="absolute inset-0 pointer-events-none"
-      style="background:linear-gradient(to top,#0e0e11 0%,rgba(14,14,17,0.55) 35%,transparent 62%)"
+      style="background:linear-gradient(to top,var(--c-bg) 0%,color-mix(in srgb,var(--c-bg) 55%,transparent) 35%,transparent 62%)"
     ></div>
   </div>
 
@@ -105,6 +108,7 @@ const hasClip       = !!video;
     <span class={`text-[10px] font-mono uppercase tracking-widest ${isProtagonist ? "text-gta-gold" : "text-zinc-500"}`}>
       {role}
     </span>
+    {note && <div class="text-[10px] text-zinc-300 leading-snug mt-0.5">{note}</div>}
   </div>
 
 </div>

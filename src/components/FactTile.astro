@@ -1,0 +1,55 @@
+---
+/**
+ * FactTile.astro — one GTA VI fact or prediction: picture, title, a short
+ * headline in the tier colour and one line. The basis and source sit behind
+ * a <details> toggle so the grid stays scannable. Data: data/gta-6/facts.json.
+ */
+import Badge from "./Badge.astro";
+import ShareDropdown from "./ShareDropdown.astro";
+import { TIER_STYLES } from "../config/tierStyles";
+import type { FactTileData } from "../config/facts";
+
+interface Props {
+  tile: FactTileData;
+}
+
+const { tile } = Astro.props;
+const tier = TIER_STYLES[tile.tier];
+const tierLabel = tile.tier.charAt(0).toUpperCase() + tile.tier.slice(1);
+const badgeLabel = tile.confidence != null ? `${tierLabel} ${tile.confidence}%` : undefined;
+---
+
+<article
+  id={tile.id}
+  data-fact-tile
+  class="group relative flex flex-col h-full rounded-xl border border-border-dim overflow-hidden hover:border-border-mid transition-colors"
+  style="background:var(--c-card);scroll-margin-top:80px"
+>
+  <div class="relative aspect-video overflow-hidden shrink-0">
+    <img src={tile.image} alt="" aria-hidden="true" loading="lazy"
+      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+    <div class="absolute inset-0" style="background:linear-gradient(to bottom,color-mix(in srgb,var(--c-bg-deep) 40%,transparent) 0%,transparent 35%,var(--c-card) 100%)"></div>
+    <div class="absolute top-0 left-0"><Badge variant="gta-vi" surface="opaque" /></div>
+    <div class="absolute top-0 right-0"><Badge variant={tile.tier} surface="opaque" label={badgeLabel} /></div>
+  </div>
+
+  <div class="flex flex-col flex-1 px-4 pt-2 pb-3">
+    <h3 class="text-sm font-semibold text-zinc-100 leading-snug">{tile.title}</h3>
+    <div class={`text-xl font-mono font-bold leading-tight mt-1 ${tier.color}`}>{tile.headline}</div>
+    <p class="text-xs text-zinc-400 leading-snug mt-1">{tile.line}</p>
+    <details class="group/d mt-auto pt-3">
+      <summary class="inline-flex items-center gap-1 cursor-pointer list-none marker:content-none [&::-webkit-details-marker]:hidden text-[10px] font-mono uppercase tracking-widest text-zinc-500 hover:text-zinc-300 transition-colors">
+        Why we say this <span class="transition-transform duration-150 group-open/d:rotate-180">&#9662;</span>
+      </summary>
+      <p class="text-[11px] text-zinc-400 leading-relaxed mt-2">{tile.basis}</p>
+      <p class="text-[10px] font-mono text-zinc-500 leading-snug mt-1.5">Source: {tile.source}</p>
+    </details>
+  </div>
+
+  <div class="px-4 py-2 border-t border-border-dim flex items-center justify-between gap-2 shrink-0">
+    {tile.chart
+      ? <a href={tile.chart.href} class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-gta-gold transition-colors truncate">Chart: {tile.chart.label} →</a>
+      : <span class="text-[10px] font-mono text-zinc-500 tracking-widest">GTAVI.AI</span>}
+    <ShareDropdown anchorId={tile.id} shareText={`GTA VI — ${tile.title}: ${tile.headline}. ${tile.line}`} size="sm" />
+  </div>
+</article>

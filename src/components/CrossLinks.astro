@@ -16,7 +16,7 @@
 
 import type {
   EntityIndex, LeonidaData, NewswireData, RedditData,
-  VehiclesData, PredictionsData, FeaturesData, FranchiseSalesData,
+  VehiclesData, FeaturesData, FranchiseSalesData,
 } from "../../types/gta";
 
 import entityIndexRaw  from "../../data/gta-6/entities/index.json";
@@ -25,7 +25,7 @@ import newswireRaw     from "../../data/feeds/newswire.json";
 import redditRaw       from "../../data/community/reddit.json";
 import vehicleRaw      from "../../data/gta-5/vehicles/performance.json";
 import { MAIN_TRAILERS } from "../config/trailers";
-import predRaw         from "../../data/gta-6/predictions.json";
+import { FACTS, LAUNCH_PREDICTIONS, MONEY_PREDICTIONS } from "../config/facts";
 import featuresRaw     from "../../data/gta-6/features.json";
 import salesRaw        from "../../data/franchise/sales.json";
 
@@ -34,7 +34,6 @@ const leonidaData  = leonidaRaw     as unknown as LeonidaData;
 const newswireData = newswireRaw    as unknown as NewswireData;
 const redditData   = redditRaw      as unknown as RedditData;
 const vehicleData  = vehicleRaw     as unknown as VehiclesData;
-const predData     = predRaw        as unknown as PredictionsData;
 const featuresData = featuresRaw    as unknown as FeaturesData;
 const salesData    = salesRaw       as unknown as FranchiseSalesData;
 
@@ -49,7 +48,7 @@ const gta6Entities   = entityIndex.total + (leonidaData.entity_stats?.total ?? 0
 const newsItems      = newswireData.items.length + (redditData.recent_posts?.length ?? 0);
 const gta5Vehicles   = vehicleData.vehicles.length;
 const trailerCount   = MAIN_TRAILERS.length;
-const predCount      = predData.predictions.length;
+const predCount      = LAUNCH_PREDICTIONS.length + MONEY_PREDICTIONS.length;
 const featuresTotal  = featuresData.categories.reduce(
   (s: number, c) => s + c.confirmed + c.reported, 0
 );
@@ -89,8 +88,8 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: `${newsItems} articles tracked nightly`,
       thumb: "/assets/gta6/locations/Vice_City_03.jpg",
       accent: "var(--c-live)" },
-    { href: "/gta-vi/buy", badge: "Pre-order",
-      label: "Pre-order tracker",
+    { href: "/gta-vi/buy", badge: "Buy",
+      label: "Buy GTA VI",
       sub: "Platforms, editions, retailers",
       thumb: "/assets/gta6/locations/Ambrosia_02.jpg",
       accent: "var(--c-title-vi)" },
@@ -113,8 +112,8 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: `${franchiseTitles} titles · 30 years of data`,
       thumb: "/assets/economy-thumbs/franchise.png",
       accent: "var(--c-brand)" },
-    { href: "/gta-vi/buy", badge: "Pre-order",
-      label: "Pre-order tracker",
+    { href: "/gta-vi/buy", badge: "Buy",
+      label: "Buy GTA VI",
       sub: "Platforms, editions, retailers",
       thumb: "/assets/gta6/locations/Ambrosia_02.jpg",
       accent: "var(--c-title-vi)" },
@@ -132,7 +131,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: `${newsItems} articles tracked nightly`,
       thumb: "/assets/gta6/locations/Grassrivers_01.jpg",
       accent: "var(--c-brand)" },
-    { href: "/gta-vi/trailers", badge: "GTA VI",
+    { href: "/gta-vi/media", badge: "GTA VI",
       label: "Trailer analysis",
       sub: `${trailerCount} official trailers analysed`,
       thumb: "https://img.youtube.com/vi/VQRLujxTm3c/mqdefault.jpg",
@@ -193,9 +192,9 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
 
   // Database page
   "database": [
-    { href: "/gta-vi/confirmed", badge: "GTA VI",
-      label: "What we know",
-      sub: "October reveals · features · cast · locations",
+    { href: "/gta-vi/facts", badge: "GTA VI",
+      label: "Facts & predictions",
+      sub: `${FACTS.length} facts · cast · places`,
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
       accent: "var(--c-title-vi)" },
     { href: "/news", badge: "News",
@@ -217,7 +216,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: "56 methods · S→D tier · full profiles",
       thumb: "/assets/gta5/dlc/cayo-perico.jpg",
       accent: "var(--c-title-online)" },
-    { href: "/gta-vi/predictions", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "GTA VI intelligence",
       sub: `${predCount} predictions · what GTA V data says about VI`,
       thumb: "/assets/gta6/characters/Jason_Duval_01.jpg",
@@ -231,7 +230,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
 
   // News page
   "news": [
-    { href: "/gta-vi/predictions", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "GTA VI predictions",
       sub: `${predCount} confidence-scored signals`,
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
@@ -241,8 +240,8 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: `${gta6Entities.toLocaleString()} GTA VI entities indexed`,
       thumb: "/assets/gta6/characters/Jason_Duval_01.jpg",
       accent: "var(--c-live)" },
-    { href: "/gta-vi/buy", badge: "Pre-order",
-      label: "Pre-order tracker",
+    { href: "/gta-vi/buy", badge: "Buy",
+      label: "Buy GTA VI",
       sub: "PS5 · Xbox · retailer watch",
       thumb: "/assets/gta6/locations/Ambrosia_02.jpg",
       accent: "var(--c-title-vi)" },
@@ -250,7 +249,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
 
   // Charts page
   "charts": [
-    { href: "/gta-vi/predictions", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "What the data predicts",
       sub: `${predCount} confidence-scored GTA VI predictions`,
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
@@ -274,7 +273,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: "Sales velocity, CPI pricing, Metacritic, revenue model",
       thumb: "/assets/economy-thumbs/franchise.png",
       accent: "var(--c-brand)" },
-    { href: "/gta-vi/predictions", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "GTA VI predictions",
       sub: "What 30 years of data says about VI",
       thumb: "/assets/gta6/characters/Jason_Duval_01.jpg",
@@ -298,7 +297,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: "26:49 · map, missions, personas, systems",
       thumb: "/assets/gta6/locations/Vice_City_01.jpg",
       accent: "var(--c-title-vi)" },
-    { href: "/gta-vi/predictions", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "GTA VI intelligence",
       sub: `${predCount} confidence-scored predictions`,
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
@@ -313,8 +312,8 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: `${trailerCount} trailers · view velocity · entity discovery`,
       thumb: `https://img.youtube.com/vi/VQRLujxTm3c/mqdefault.jpg`,
       accent: "var(--c-title-vi)" },
-    { href: "/gta-vi/buy", badge: "Pre-order",
-      label: "Pre-order tracker",
+    { href: "/gta-vi/buy", badge: "Buy",
+      label: "Buy GTA VI",
       sub: "PS5 · Xbox Series X|S · edition comparison",
       thumb: "/assets/gta6/locations/Ambrosia_02.jpg",
       accent: "var(--c-title-vi)" },
@@ -332,8 +331,8 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: `${gta6Entities.toLocaleString()} characters · vehicles · locations · weapons`,
       thumb: "/assets/gta6/characters/Jason_Duval_01.jpg",
       accent: "var(--c-live)" },
-    { href: "/gta-vi/buy", badge: "Pre-order",
-      label: "Pre-order tracker",
+    { href: "/gta-vi/buy", badge: "Buy",
+      label: "Buy GTA VI",
       sub: "Platforms, editions, retailer watch",
       thumb: "/assets/gta6/locations/Ambrosia_02.jpg",
       accent: "var(--c-title-vi)" },
@@ -341,9 +340,9 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
 
   // Predictions page
   "predictions": [
-    { href: "/gta-vi/confirmed", badge: "GTA VI",
-      label: "What we know about GTA VI",
-      sub: "October reveals · features · cast · locations",
+    { href: "/gta-vi/facts", badge: "GTA VI",
+      label: "GTA VI facts & predictions",
+      sub: `${FACTS.length} facts · cast · places`,
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
       accent: "var(--c-title-vi)" },
     { href: "/charts", badge: "Charts",
@@ -365,7 +364,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: "26:49 · six chapters · map, missions, systems",
       thumb: "/assets/gta6/locations/Leonida_Keys_01.jpg",
       accent: "var(--c-title-vi)" },
-    { href: "/gta-vi/predictions", badge: "Predictions",
+    { href: "/gta-vi/facts", badge: "Predictions",
       label: "What it changes",
       sub: `${predCount} confidence-scored calls`,
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
@@ -389,7 +388,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: "Oct 15 · 90s · prison call, vault, heist",
       thumb: "/assets/screenshots/Jason_and_Lucia_03.jpg",
       accent: "var(--c-title-vi)" },
-    { href: "/gta-vi/confirmed", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "What EL confirmed",
       sub: "Map, systems, story · every confirmed feature",
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
@@ -399,7 +398,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: "52 entities mapped across six chapters",
       thumb: "/assets/gta6/locations/Leonida_Keys_01.jpg",
       accent: "var(--c-brand)" },
-    { href: "/gta-vi/income", badge: "Income",
+    { href: "/gta-vi/economy#section-income-predictions", badge: "Income",
       label: "EL income sources",
       sub: "WAINK, robberies, hunting, gala contracts",
       thumb: "/assets/gta6/locations/Ambrosia_02.jpg",
@@ -418,7 +417,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: "Official stills timed to the 26:49 video",
       thumb: "/assets/gta6/locations/Vice_City_01.jpg",
       accent: "var(--c-title-vi)" },
-    { href: "/gta-vi/predictions", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "GTA VI intelligence",
       sub: `${predCount} predictions · tiers · sources`,
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
@@ -438,8 +437,8 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: `${newsItems} articles · updated nightly`,
       thumb: "/assets/gta6/locations/Grassrivers_01.jpg",
       accent: "var(--c-brand)" },
-    { href: "/gta-vi/buy", badge: "Pre-order",
-      label: "Pre-order tracker",
+    { href: "/gta-vi/buy", badge: "Buy",
+      label: "Buy GTA VI",
       sub: "Editions, platforms, retailer watch",
       thumb: "/assets/gta6/locations/Ambrosia_02.jpg",
       accent: "var(--c-title-vi)" },
@@ -447,7 +446,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
 
   // Buy page
   "buy": [
-    { href: "/gta-vi/predictions", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "Intelligence backing these prices",
       sub: `${predCount} predictions · ${trailerCount} trailers analysed`,
       thumb: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
@@ -481,7 +480,7 @@ const ALL_LINKS: Record<string, CrossLink[]> = {
       sub: "GTA-PPI · inflation · passive stack tracker",
       thumb: "/assets/gta5/dlc/diamond-casino-heist.jpg",
       accent: "var(--c-brand)" },
-    { href: "/gta-vi/predictions", badge: "GTA VI",
+    { href: "/gta-vi/facts", badge: "GTA VI",
       label: "GTA VI — what comes next",
       sub: `${predCount} predictions · economy preview · pre-order`,
       thumb: "/assets/gta6/characters/Jason_Duval_01.jpg",

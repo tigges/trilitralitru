@@ -1,0 +1,225 @@
+---
+/**
+ * /gta-vi/media — Music & Video. Official trailers (with visual briefs where
+ * one exists), Rockstar's radio station players and album, the trailer songs,
+ * and every spot or announcement in a collapsed list.
+ */
+import Base from "../../layouts/Base.astro";
+import SectionHeader from "../../components/SectionHeader.astro";
+import Badge from "../../components/Badge.astro";
+import CardFooter from "../../components/CardFooter.astro";
+import GtaViMusic from "../../components/GtaViMusic.astro";
+import GtaViBreadcrumb from "../../components/GtaViBreadcrumb.astro";
+import { ALL_TRAILERS, MAIN_TRAILERS } from "../../config/trailers";
+import velocityData from "../../../data/gta-6/trailer-velocity.json";
+import soundtrackData from "../../../data/gta-6/soundtrack.json";
+import musicData from "../../../data/gta-6/music.json";
+
+const BRIEFS: Record<string, string> = {
+  rz1B4B2yBZY: "/gta-vi/launch-trailer",
+  tJbzMqJGH4k: "/gta-vi/extended-look",
+};
+
+const latestViews = new Map<string, number>(
+  velocityData.trailers.map((t) => [t.youtube_id, t.snapshots.at(-1)?.views ?? 0]),
+);
+const viewsAsOf = velocityData.trailers[0]?.snapshots.at(-1)?.timestamp?.slice(0, 10) ?? null;
+
+const formatViews = (n: number) =>
+  n >= 1e9 ? `${(n / 1e9).toFixed(2)}B` : n >= 1e6 ? `${Math.round(n / 1e6)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n);
+const formatDuration = (s?: number) =>
+  s ? (s >= 60 ? `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s` : `${s}s`) : null;
+const formatDate = (d: string | null) =>
+  d ? new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "—";
+
+const mainTrailers = MAIN_TRAILERS.slice().sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""));
+const totalMainViews = mainTrailers.reduce((n, t) => n + (latestViews.get(t.youtube_id) ?? 0), 0);
+
+const OTHER_LABEL: Record<string, string> = { announcement: "Announcement", spot: "Ad spot", alternate: "Alternate upload" };
+const otherVideos = ALL_TRAILERS
+  .filter((t) => !MAIN_TRAILERS.includes(t))
+  .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""));
+
+const confirmedSongs = ((soundtrackData as any).tracks ?? []).map((t: any) => ({
+  title: t.title as string,
+  artist: t.artist as string,
+  trailer: t.source as string,
+  year: t.year as number,
+}));
+const SONGS_SHOWN = 6;
+
+// 30-second preview clips (trimmed, fade-out) for songs we host audio for.
+// Keyed by exact song title. Full tracks are intentionally not hosted (copyright).
+const SONG_PREVIEWS: Record<string, string> = {
+  "Love Is a Long Road": "/assets/audio/love-is-a-long-road-preview.mp3",
+  "Hot Together":        "/assets/audio/hot-together-preview.mp3",
+};
+
+const stationCount = musicData.radio.stations.length;
+const albumTracks = musicData.album.track_count;
+---
+
+<Base
+  titleContext="gta-vi"
+  title="GTA VI Music & Video"
+  description={`Every official GTA VI trailer — ${mainTrailers.length} trailers with ${formatViews(totalMainViews)} YouTube views — plus ${stationCount} radio stations you can play from Rockstar, the ${albumTracks}-track album and ${confirmedSongs.length} trailer songs.`}
+  ogPage="vi-intel"
+>
+  <section class="relative overflow-hidden border-b border-border-dim">
+    <div class="absolute inset-0" aria-hidden="true">
+      <img src="/assets/gta6/locations/Vice_City_04.jpg" alt="" class="w-full h-full object-cover opacity-30" loading="eager" />
+    </div>
+    <div class="absolute inset-0" style="background:linear-gradient(to right,var(--c-bg) 0%,color-mix(in srgb,var(--c-bg) 70%,transparent) 60%,var(--c-bg) 100%)"></div>
+    <div class="absolute inset-0" style="background:linear-gradient(to bottom,transparent 50%,var(--c-bg) 100%)"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-10">
+      <GtaViBreadcrumb current="Music & Video" />
+      <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">Music &amp; Video</h1>
+      <p class="text-zinc-400 text-sm max-w-xl leading-relaxed">
+        {mainTrailers.length} official trailers with {formatViews(totalMainViews)} views on Rockstar's channel.
+        {stationCount} radio stations with celebrity hosts, a {albumTracks}-track album out on launch day and a score by Justice.
+        Radio and podcasts play in cars and on foot through Jason and Lucia's earbuds.
+      </p>
+    </div>
+  </section>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 flex flex-col gap-14">
+
+    <section id="section-trailers" style="scroll-margin-top:80px">
+      <SectionHeader bright label="// Official Trailers" dotColor="var(--c-title-vi)" pillHref="/charts?title=gta-vi" pillLabel="View velocity chart →" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {mainTrailers.map((t) => {
+          const brief = BRIEFS[t.youtube_id];
+          const views = latestViews.get(t.youtube_id);
+          const duration = formatDuration(t.duration_sec);
+          return (
+            <article class="rounded-xl border border-border-dim overflow-hidden flex flex-col" style="background:var(--c-card)">
+              <a href={brief ?? t.source_url} target={brief ? undefined : "_blank"} rel={brief ? undefined : "noopener noreferrer"} class="group relative block aspect-video overflow-hidden">
+                <img src={`https://img.youtube.com/vi/${t.youtube_id}/hqdefault.jpg`} alt={t.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <div class="absolute inset-0" style="background:linear-gradient(to top,var(--c-bg) 0%,transparent 55%)"></div>
+                <div class="absolute top-0 left-0"><Badge variant="gta-vi" surface="opaque" /></div>
+                {duration && <span class="absolute bottom-2 right-2 text-[10px] font-mono text-zinc-300 rounded px-1.5 py-0.5" style="background:color-mix(in srgb,var(--c-bg-deep) 85%,transparent)">{duration}</span>}
+              </a>
+              <div class="px-4 py-3 flex flex-col gap-1 flex-1">
+                <h2 class="text-sm font-semibold text-zinc-200 leading-snug">{t.title.replace(/^Grand Theft Auto VI:?\s*/, "")}</h2>
+                <div class="text-[11px] font-mono text-zinc-500">
+                  {formatDate(t.published_at)}{views ? ` · ${formatViews(views)} views` : ""}
+                </div>
+                <div class="flex items-center gap-4 mt-auto pt-2">
+                  {brief && <a href={brief} class="text-[11px] font-mono text-gta-gold hover:text-gta-bright transition-colors">Visual brief →</a>}
+                  <a href={t.source_url} target="_blank" rel="noopener noreferrer" class="text-[11px] font-mono text-zinc-400 hover:text-zinc-200 transition-colors">Watch on YouTube ↗</a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+
+    <GtaViMusic />
+
+    {confirmedSongs.length > 0 && (
+    <section id="section-soundtrack" style="scroll-margin-top:80px" data-more-group>
+      <SectionHeader bright label="// Songs in the Trailers" dotColor="var(--c-growth)" />
+      <div class="rounded-xl border border-border-dim overflow-hidden" style="background:var(--c-card-raised)">
+        <div class="grid grid-cols-1 md:grid-cols-2">
+          {confirmedSongs.map((song, i) => {
+            const preview = SONG_PREVIEWS[song.title];
+            const sourceBadge = song.trailer === "Extended Look" ? "EL"
+              : song.trailer === "Trailer 1" ? "T1"
+              : song.trailer === "Trailer 2" ? "T2"
+              : song.trailer;
+            const extra = i >= SONGS_SHOWN;
+            return (
+            <div class={`px-5 py-3 flex items-center gap-3 border-b border-border-dim${extra ? " hidden" : ""}`} data-more-item={extra ? "" : undefined}>
+              {preview ? (
+                <>
+                  <button
+                    class="song-play w-7 h-7 rounded bg-gta-green/10 border border-gta-green/20 flex items-center justify-center shrink-0 hover:bg-gta-green/20 transition-colors"
+                    data-audio={`song-audio-${i}`}
+                    aria-label={`Play 30-second preview of ${song.title}`}
+                    type="button"
+                  >
+                    <span class="song-play-icon text-gta-green text-[11px] leading-none">▶</span>
+                  </button>
+                  <audio id={`song-audio-${i}`} class="song-audio" src={preview} preload="none"></audio>
+                </>
+              ) : (
+                <div class="w-7 h-7 rounded bg-gta-green/10 border border-gta-green/20 flex items-center justify-center shrink-0">
+                  <span class="text-gta-green text-xs">♪</span>
+                </div>
+              )}
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold text-zinc-200 leading-tight">{song.title}</div>
+                <div class="text-[11px] font-mono text-zinc-500 mt-0.5">{song.artist} · {song.year}{preview ? " · 30s preview" : ""}</div>
+              </div>
+              <div class="shrink-0 text-right">
+                <span class="text-[10px] font-mono bg-gta-gold/10 text-gta-gold border border-gta-gold/20 px-2 py-0.5 rounded uppercase tracking-widest">{sourceBadge}</span>
+              </div>
+            </div>
+            );
+          })}
+        </div>
+        {confirmedSongs.length > SONGS_SHOWN && (
+          <div class="px-5 py-3 border-b border-border-dim flex justify-center" data-more-btn-wrap>
+            <button type="button" data-more-btn
+              class="px-4 py-2 rounded-lg border border-border-mid text-[11px] font-mono uppercase tracking-widest text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors">
+              Show {confirmedSongs.length - SONGS_SHOWN} more songs
+            </button>
+          </div>
+        )}
+        <div class="px-5 py-3 flex items-center justify-between">
+          <span class="text-[10px] text-zinc-500 font-mono">Source: official trailers + Extended Look · {confirmedSongs.length} confirmed tracks</span>
+          <span class="text-[11px] font-mono text-zinc-500 tracking-widest">GTAVI.AI</span>
+        </div>
+      </div>
+      <noscript><style>[data-more-item]{display:flex !important}[data-more-btn-wrap]{display:none}</style></noscript>
+    </section>
+    )}
+
+    <section id="section-other-videos" style="scroll-margin-top:80px">
+      <details class="group rounded-xl border border-border-dim overflow-hidden" style="background:var(--c-card-raised)">
+        <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer list-none marker:content-none [&::-webkit-details-marker]:hidden">
+          <span class="text-[11px] font-mono uppercase tracking-[0.2em] text-zinc-300">// Spots, announcements &amp; alternate uploads · {otherVideos.length}</span>
+          <span class="text-zinc-500 text-xs font-mono shrink-0 transition-transform duration-150 group-open:rotate-180">&#9662;</span>
+        </summary>
+        <ul class="divide-y divide-border-dim border-t border-border-dim">
+          {otherVideos.map((t) => {
+            const views = latestViews.get(t.youtube_id);
+            return (
+              <li class="px-5 py-3 flex items-center gap-3 flex-wrap">
+                <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-500 w-32 shrink-0">{OTHER_LABEL[t.type ?? ""] ?? t.type}</span>
+                <a href={t.source_url} target="_blank" rel="noopener noreferrer" class="text-sm text-zinc-300 hover:text-white transition-colors flex-1 min-w-0">
+                  {t.title.replace(/^Grand Theft Auto VI:?\s*/, "")} ↗
+                </a>
+                <span class="text-[11px] font-mono text-zinc-500 shrink-0">{formatDate(t.published_at)}{views ? ` · ${formatViews(views)}` : ""}</span>
+              </li>
+            );
+          })}
+        </ul>
+        <CardFooter anchorId="section-other-videos" sources={`Source: Rockstar Games YouTube channel${viewsAsOf ? ` · views as of ${viewsAsOf}` : ""}`} shareText="Every official GTA VI video — trailers, spots and announcements — tracked on GTAVI.AI." />
+      </details>
+    </section>
+  </div>
+
+  <script>
+    import "../../scripts/showMore";
+
+    // Soundtrack preview playback — native <audio>, one clip at a time.
+    document.querySelectorAll<HTMLButtonElement>(".song-play").forEach(btn => {
+      const audio = document.getElementById(btn.dataset.audio ?? "") as HTMLAudioElement | null;
+      const icon  = btn.querySelector<HTMLElement>(".song-play-icon");
+      if (!audio || !icon) return;
+      btn.addEventListener("click", () => {
+        const wasPlaying = !audio.paused;
+        document.querySelectorAll<HTMLAudioElement>(".song-audio").forEach(a => a.pause());
+        document.querySelectorAll<HTMLElement>(".song-play-icon").forEach(i => { i.textContent = "▶"; });
+        if (!wasPlaying) {
+          audio.currentTime = 0;
+          audio.play().catch(() => {});
+          icon.textContent = "⏸";
+        }
+      });
+      audio.addEventListener("ended", () => { icon.textContent = "▶"; });
+    });
+  </script>
+</Base>

@@ -8,11 +8,11 @@ export default defineConfig({
   integrations: [
     tailwind(),
     sitemap({
-      filter: (page) => !/^\/(gta-vi\/intel|predictions)\/$/.test(new URL(page).pathname),
+      filter: (page) => !/^\/(gta-vi\/(intel|confirmed|predictions|trailers|music|income)|predictions)\/$/.test(new URL(page).pathname),
     }),
   ],
   redirects: {
-    '/community/polls': '/gta-vi/predictions',
+    '/community/polls': '/gta-vi/facts',
     '/gta-online/income': '/database?game=gta-online',
   },
   vite: {

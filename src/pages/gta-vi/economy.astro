@@ -15,27 +15,33 @@ import CardFooter from "../../components/CardFooter.astro";
 import SectionHeader from "../../components/SectionHeader.astro";
 import GamePill from "../../components/GamePill.astro";
 import ReadItBlock from "../../components/ReadItBlock.astro";
+import ChartSection from "../../components/ChartSection.astro";
+import ChartRevenueSplit from "../../components/charts/ChartRevenueSplit.astro";
+import ChartTtwoStock from "../../components/charts/ChartTtwoStock.astro";
+import FactGrid from "../../components/FactGrid.astro";
+import IncomeCard from "../../components/IncomeCard.astro";
+import Rdr2Evidence from "../../components/Rdr2Evidence.astro";
+import GtaViBreadcrumb from "../../components/GtaViBreadcrumb.astro";
+import { ECONOMY_FACTS, MONEY_PREDICTIONS } from "../../config/facts";
+import { TIER_STYLES } from "../../config/tierStyles";
 
-import type { EconomyModelsData, PredictionsData, TrailerVelocityData, RevenueSplitData } from "../../types/gta";
+import type { EconomyModelsData, TrailerVelocityData, RevenueSplitData } from "../../types/gta";
 
 import economyDataRaw  from "../../../data/franchise/economy-models.json";
-import predictionsRaw  from "../../../data/gta-6/predictions.json";
 import velocityDataRaw from "../../../data/gta-6/trailer-velocity.json";
 import gta6Rpp         from "../../../data/gta-6/economy/gta-rpp.json";
 import revenueRaw      from "../../../data/franchise/revenue-split.json";
+import commercialsRaw  from "../../../data/gta-6/launch-commercials.json";
+import ttwoStock       from "../../../data/franchise/ttwo-stock.json";
+import incomeData      from "../../../data/gta-6/income-predictions.json";
 
 const economyData   = economyDataRaw  as unknown as EconomyModelsData;
-const predictions   = predictionsRaw  as unknown as PredictionsData;
 const velocityData  = velocityDataRaw as unknown as TrailerVelocityData;
 const revenueData   = revenueRaw      as unknown as RevenueSplitData;
 
 // GTA VI economy model entry
 const economy = economyData.economies.find(e => e.title_id === "gta-6");
 
-// Economic model predictions only
-const econPreds = predictions.predictions.filter(
-  p => p.prediction_method === "economic-model"
-);
 
 // Trailer view totals for context
 const t1 = velocityData.trailers.find(t => t.youtube_id === "QdBZY2fkU-0");
@@ -50,6 +56,47 @@ const revYears   = revenueData.years;
 const peakRevYear   = revYears.filter((y: any) => !y.is_prediction).reduce((a: any, b: any) => b.recurrent_bn > a.recurrent_bn ? b : a);
 const latestRevYear = revYears.filter((y: any) => !y.is_prediction).at(-1);
 const vi6Projection = revYears.find((y: any) => y.calendar_year === 2026);
+
+// Opening: why no Online at launch matters
+const actualRev   = revYears.filter((y: any) => !y.is_prediction);
+const firstRev    = actualRev[0] as any;
+const peakPctRev  = actualRev.reduce((a: any, b: any) => (b.pct_recurrent > a.pct_recurrent ? b : a)) as any;
+const guidanceH2  = (commercialsRaw as any).guidance?.implied_h2_usd_bn as { low: number; high: number } | undefined;
+const preorderDate = ttwoStock.annotations.find((a) => a.type === "commercial" && /pre-order/i.test(a.label))?.date;
+const pricesBefore = preorderDate ? ttwoStock.prices.filter((p) => p.date <= preorderDate) : [];
+const preorderClose = pricesBefore.at(-1)?.close;
+const latestClose   = ttwoStock.prices.at(-1)?.close;
+const ttwoSincePreorders = preorderClose && latestClose ? Math.round(((latestClose - preorderClose) / preorderClose) * 100) : null;
+
+const OPENING_CARDS = [
+  {
+    title: "No Online at launch",
+    stat: `${vi6Projection?.pct_recurrent ?? "—"}%`,
+    statLabel: `recurring share forecast for ${vi6Projection?.fy ?? "the launch year"}`,
+    color: "var(--c-flow-injection)",
+    text: `GTA Online turned GTA V into a recurring business: ${firstRev?.pct_recurrent}% of its revenue in ${firstRev?.fy}, ${peakPctRev?.pct_recurrent}% by ${peakPctRev?.fy}. GTA VI launches without it, so the first months run on game sales, and Rockstar is under pressure to open Online quickly.`,
+  },
+  {
+    title: "The story is the bridge",
+    stat: "80 hrs",
+    statLabel: "story, with cash-gated steps",
+    color: "var(--c-gta-dollar)",
+    text: "Robberies, WAINK car theft and story beats that need raised cash keep players in a money loop until Online opens. GTA Online followed GTA V by two weeks; Red Dead Online came about a month after RDR2.",
+  },
+  {
+    title: "Price carries the window",
+    stat: guidanceH2 ? `$${guidanceH2.low.toFixed(2)}–${guidanceH2.high.toFixed(2)}B` : "—",
+    statLabel: "Take-Two bookings implied for Oct–Mar",
+    color: "var(--c-brand)",
+    text: `Take-Two's guidance leaves that much for the launch window, carried by copies at $79.99–$99.99 rather than GTA$ sales.${ttwoSincePreorders !== null ? ` Investors are cautious: TTWO is ${ttwoSincePreorders < 0 ? "down" : "up"} ${Math.abs(ttwoSincePreorders)}% since pre-orders opened.` : ""}`,
+  },
+];
+
+const TIER_RANK: Record<string, number> = { confirmed: 0, reported: 1, predicted: 2 };
+const incomeList = ((incomeData as any).income_predictions as any[])
+  .slice()
+  .sort((a, b) => (TIER_RANK[a.confidence_tier] ?? 2) - (TIER_RANK[b.confidence_tier] ?? 2));
+const INCOME_SHOWN = 8;
 ---
 
 <Base
@@ -57,7 +104,6 @@ const vi6Projection = revYears.find((y: any) => y.calendar_year === 2026);
   title="GTA VI Economy — Multi-Region Currency Union"
   description="GTA VI projected economy analysis: multi-region currency union (Vice City, Leonida + more), regional purchasing parity, Shark Card mechanics, and the Eurozone analogue. Updated as intelligence confirms."
   ogPage="vi-intel"
-  crossLinksContext="gta-online-economy"
 >
 
   <!-- Hero header — image banner -->
@@ -70,6 +116,7 @@ const vi6Projection = revYears.find((y: any) => y.calendar_year === 2026);
       <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(70% 90% at 85% 0%, var(--c-hero-bloom), transparent 70%)"></div>
     </div>
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-14">
+      <GtaViBreadcrumb current="Economy" />
       <div class="flex items-center gap-2 mb-4">
         <GamePill game="gta-vi" size="xs" />
         <Badge variant="predicted" surface="opaque" />
@@ -86,7 +133,7 @@ const vi6Projection = revYears.find((y: any) => y.calendar_year === 2026);
         {[
           { value: "17",        label: "complexity score",        sub: "franchise maximum",       accent: "var(--c-brand)" },
           { value: "2",         label: "economic territories",    sub: "Vice City · Leonida",     accent: "var(--c-title-vi)" },
-          { value: `${econPreds.length}`,  label: "economic predictions",   sub: "model-derived",  accent: "var(--c-live)" },
+          { value: `${MONEY_PREDICTIONS.length}`,  label: "money predictions",   sub: "model-derived",  accent: "var(--c-live)" },
           { value: `${Math.round(totalViews / 1e6)}M`, label: "trailer views · combined", sub: "live · YouTube API", accent: "var(--c-economy)" },
         ].map(s => (
           <div class="relative overflow-hidden rounded-xl border border-border-mid px-4 py-3" style="background:var(--c-card-raised)">
@@ -104,6 +151,43 @@ const vi6Projection = revYears.find((y: any) => y.calendar_year === 2026);
   </section>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 flex flex-col gap-12">
+
+    <section id="section-launch-economics" style="scroll-margin-top:80px">
+      <SectionHeader bright label="// Why No Online at Launch Matters" dotColor="var(--c-flow-injection)" />
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+        {OPENING_CARDS.map((c) => (
+          <div class="relative overflow-hidden rounded-xl border border-border-dim px-5 py-4 flex flex-col" style="background:var(--c-card-raised)">
+            <div class="absolute top-0 left-0 right-0 h-px" style={`background:linear-gradient(90deg,${c.color},transparent 80%)`}></div>
+            <div class="text-sm font-semibold text-zinc-100">{c.title}</div>
+            <div class="text-2xl font-mono font-black mt-2" style={`color:${c.color}`}>{c.stat}</div>
+            <div class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{c.statLabel}</div>
+            <p class="text-xs text-zinc-400 leading-relaxed mt-3">{c.text}</p>
+          </div>
+        ))}
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <ChartSection chartId="revenue-split-chart"><ChartRevenueSplit /></ChartSection>
+        <ChartSection chartId="ttwo-stock-chart" meta={null}><ChartTtwoStock /></ChartSection>
+      </div>
+    </section>
+
+    <section id="section-money-facts" style="scroll-margin-top:80px">
+      <SectionHeader bright label={`// What Moves the Money — ${ECONOMY_FACTS.length} Facts`} dotColor="var(--c-gta-dollar)" pillHref="/gta-vi/facts" pillLabel="All facts →" />
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {ECONOMY_FACTS.map((f) => (
+          <a href={`/gta-vi/facts#${f.id}`} class="group flex flex-col rounded-xl border border-border-dim overflow-hidden hover:border-border-mid transition-colors" style="background:var(--c-card)">
+            <div class="relative h-20 overflow-hidden">
+              <img src={f.image} alt="" aria-hidden="true" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div class="absolute inset-0" style="background:linear-gradient(to bottom,transparent 30%,var(--c-card) 100%)"></div>
+            </div>
+            <div class="px-3 pb-3 pt-1">
+              <div class="text-[11px] font-semibold text-zinc-200 leading-snug">{f.title}</div>
+              <div class={`text-sm font-mono font-bold mt-0.5 ${TIER_STYLES[f.tier].color}`}>{f.headline}</div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
 
     <!-- ═══════════════════════════════════════════════════════
          GTA VI SED — SIMPLIFIED ECONOMY DIAGRAM
@@ -485,43 +569,45 @@ const vi6Projection = revYears.find((y: any) => y.calendar_year === 2026);
 
 
 
-    <!-- ═══════════════════════════════════════════════════════
-         ECONOMIC PREDICTIONS
-    ═══════════════════════════════════════════════════════ -->
-    <section>
-      <SectionHeader bright label="// Economic Structure Predictions" dotColor="var(--c-title-vi)" />
-      <div class="flex flex-col gap-3">
-        {econPreds.map((pred: any) => {
-          const tierColor = pred.confidence_tier === "reported" ? "var(--c-growth)" : pred.confidence_tier === "confirmed" ? "var(--c-live)" : "var(--c-brand)";
-          const tierLabel = pred.confidence_tier === "reported" ? "Reported" : pred.confidence_tier === "confirmed" ? "Confirmed" : "Predicted";
-          return (
-            <div class="rounded-xl border border-border-dim overflow-hidden" style="background:var(--c-card-raised)">
-              <div class="px-5 py-4 flex items-start gap-4">
-                <div class="shrink-0 flex flex-col items-center gap-1 pt-0.5">
-                  <div class="text-[10px] font-mono border px-1.5 py-0.5 rounded uppercase tracking-widest"
-                       style={`color:${tierColor};border-color:${tierColor}40`}>{tierLabel}</div>
-                  <div class="text-lg font-mono font-black" style={`color:${tierColor}`}>{pred.confidence}%</div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="font-semibold text-zinc-200 text-sm mb-1">
-                    {pred.title}
-                  </div>
-                  <div class="text-[10px] font-mono text-zinc-400 leading-relaxed mb-2">
-                    {pred.basis}
-                  </div>
-                  {pred.prediction_range && (
-                    <div class="flex items-center gap-3 text-[11px] font-mono text-zinc-400">
-                      <span>Low: {pred.prediction_range.low}</span>
-                      <span>·</span>
-                      <span>High: {pred.prediction_range.high}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+    <section id="section-money-predictions" style="scroll-margin-top:80px">
+      <SectionHeader bright label={`// Money Predictions — ${MONEY_PREDICTIONS.length}`} dotColor="var(--c-title-vi)" pillHref="/intelligence" pillLabel="How we score →" />
+      <FactGrid tiles={MONEY_PREDICTIONS} initial={6} noun="money predictions" />
+    </section>
+
+    <Rdr2Evidence />
+
+    <section id="section-income-predictions" style="scroll-margin-top:80px" data-more-group>
+      <SectionHeader bright label={`// GTA VI Online — ${incomeList.length} Predicted Income Sources`} dotColor="var(--c-title-vi)" pillHref="/database?game=gta-online" pillLabel="GTA Online income today →" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {incomeList.map((p: any, i: number) => (
+          <div class={i >= INCOME_SHOWN ? "hidden" : undefined} data-more-item={i >= INCOME_SHOWN ? "" : undefined}>
+            <IncomeCard
+              id={p.id}
+              name={p.name}
+              game="gta-vi"
+              category={p.category}
+              region={p.region}
+              confidence_tier={p.confidence_tier}
+              confidence_score={p.confidence_score}
+              thumbnail={p.thumbnail}
+              trailer_evidence={p.trailer_evidence}
+              predicted_payout_per_run={p.predicted_payout_per_run}
+              predicted_gta_per_hr={p.predicted_gta_per_hr}
+              analogous_gta_online={p.analogous_gta_online}
+              basis={p.basis}
+              prediction_range={p.prediction_range}
+            />
+          </div>
+        ))}
       </div>
+      {incomeList.length > INCOME_SHOWN && (
+        <div class="flex justify-center mt-4" data-more-btn-wrap>
+          <button type="button" data-more-btn
+            class="px-4 py-2 rounded-lg border border-border-mid text-[11px] font-mono uppercase tracking-widest text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors">
+            Show {incomeList.length - INCOME_SHOWN} more income sources
+          </button>
+        </div>
+      )}
     </section>
 
     <!-- ═══════════════════════════════════════════════════════
@@ -548,8 +634,8 @@ const vi6Projection = revYears.find((y: any) => y.calendar_year === 2026);
       <a href="/gta-online/economy" class="px-4 py-2 rounded border border-gta-teal/30 text-gta-teal text-[11px] font-mono hover:bg-gta-teal/20 transition-all">
         GTA Online Economy Model →
       </a>
-      <a href="/gta-vi/predictions" class="px-4 py-2 rounded border border-gta-gold/20 text-gta-gold text-[11px] font-mono hover:bg-gta-gold/8 transition-all">
-        GTA VI Intel & Predictions →
+      <a href="/gta-vi/facts" class="px-4 py-2 rounded border border-gta-gold/20 text-gta-gold text-[11px] font-mono hover:bg-gta-gold/8 transition-all">
+        GTA VI Facts & Predictions →
       </a>
       <div class="ml-auto">
         <div class="flex items-center gap-2 shrink-0">

@@ -21,6 +21,7 @@ import EmbedBase from "../../../../layouts/EmbedBase.astro";
 import PredictionCard from "../../../../components/PredictionCard.astro";
 import type { GetStaticPaths } from "astro";
 import predRaw from "../../../../config/predictions";
+import { factHref } from "../../../../config/facts";
 
 export const getStaticPaths: GetStaticPaths = () => {
   return (predRaw as any).predictions.map((p: any) => ({
@@ -34,7 +35,7 @@ const pred = (predRaw as any).predictions.find((p: any) => p.id === predId);
 if (!pred) return Astro.redirect("/404");
 
 const SITE_BASE  = import.meta.env.SITE ?? "https://gtavi.ai";
-const detailHref = `${SITE_BASE}/gta-vi/predictions#${pred.id}`;
+const detailHref = `${SITE_BASE}${factHref(pred.id)}`;
 ---
 
 <EmbedBase title={`${pred.title} — GTAVI.AI Prediction`}>

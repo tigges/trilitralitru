@@ -211,21 +211,26 @@ The version is displayed in the ops bar on every page (`Base.astro`) and in the 
 3. Add a step to `.github/workflows/fetch-data.yml` in the appropriate section
 4. If a new secret is needed, document it in the table above and in this file
 
-### Site structure (v1.136.0)
+### Site structure (v1.137.0)
 
 Top menu has five groups, defined in `navGroups` in `src/layouts/Base.astro`:
 
 | Group | Pages |
 |---|---|
-| GTA VI | `/gta-vi` · `/gta-vi/confirmed` (What we know) · `/gta-vi/predictions` · `/gta-vi/trailers` · `/gta-vi/music` · `/gta-vi/economy` · `/gta-vi/buy` |
+| GTA VI | `/gta-vi` (Overview) · `/gta-vi/facts` (Facts & predictions) · `/gta-vi/media` (Music & video) · `/gta-vi/economy` |
 | GTA Online | `/gta-online` · income (database) · `/gta-online/economy` |
 | Franchise | `/franchise/history` · `/franchise/economics` · `/gta-v` |
 | Data | `/charts` · `/database` · `/intelligence` (Methodology) |
 | News | `/news` |
 
-- Every `/gta-vi/*` page gets the `GtaViSubNav.astro` pill row automatically from `Base.astro`. Add new GTA VI pages to the `GTA_VI_PAGES` list in that component and to the GTA VI dropdown.
+- The four GTA VI pages are listed once in `GTA_VI_PAGES` in `src/config/facts.ts`; the GTA VI dropdown and the "// More in GTA VI" previous/next strip (shown instead of CrossLinks on those four pages) are built from it. `/gta-vi/launch-trailer` and `/gta-vi/extended-look` count as Music & video.
+- Every mega-panel marks the current page ("You are here"). There is no sub-nav pill row.
+- Buy is not a GTA VI menu item: it is the "Buy GTA VI" header CTA (replaces Pre-order) plus the Buy strip at the bottom of the GTA VI panel. `/gta-vi/buy` stays as the page.
+- Sub-pages use `GtaViBreadcrumb.astro` in the hero.
+- Facts and predictions live in `data/gta-6/facts.json` (`facts`, `launch_predictions`, `money_predictions`). Each item is one `FactTile`: title, headline, one line, a collapsed "Why we say this" (≤2 sentences). Keep text tight. `FactGrid.astro` shows `initial` tiles then a "Show N more" button (`src/scripts/showMore.ts`, which also reveals deep-linked hidden items). Money predictions and `economy: true` facts appear on `/gta-vi/economy`.
+- Link to a fact or prediction with `factHref(id)` from `src/config/facts.ts` — it also resolves old `predictions.json` ids.
 - One topic, one home: link to the page that owns a section instead of copying it.
-- `/gta-vi/intel` is retired. `src/pages/gta-vi/intel.astro` is a hash-aware redirect (`#oct-*`, `#feature-tracker`, `#section-cast`, etc. go to `/gta-vi/confirmed`; `#section-music` to `/gta-vi/music`; `#income-pred-*` to `/gta-vi/income`; everything else to `/gta-vi/predictions`). The embed endpoint `/gta-vi/intel/embed/[predId]` keeps its URL. Never link to `/gta-vi/intel` in new code.
+- Retired URLs are hash-aware redirect stubs using `HashRedirect.astro` and `REDIRECT_MAP` in `src/config/facts.ts`: `/gta-vi/intel`, `/gta-vi/confirmed`, `/gta-vi/predictions`, `/predictions` → `/gta-vi/facts`; `/gta-vi/trailers`, `/gta-vi/music` → `/gta-vi/media`; `/gta-vi/income` → `/gta-vi/economy`. They are excluded from the sitemap. The embed endpoint `/gta-vi/intel/embed/[predId]` keeps its URL. Never link to a retired URL in new code.
 
 ### Adding new charts
 
@@ -234,12 +239,12 @@ Import the data file at the top, add an HTML container (`<div id="my-chart">`), 
 
 ### GTA VI music and pre-launch reveals (hand-curated)
 
-- `data/gta-6/music.json` — official radio stations (hosts, preview tracks from the `/VI/music` page payload), album singles, score. Rendered by `GtaViMusic.astro` on `/gta-vi/music`. Trailer-heard licensed songs stay in `soundtrack.json`. Audio comes only from official players, loaded on click: Rockstar's station embed (`rockstargames.com/VI/music/embed/{embed_key}/simple`) and Spotify embeds (`spotify_id`, taken from Rockstar's `gtavi-thealbum.lnk.to` links). Never re-host station or album audio in `public/`.
-- `data/gta-6/october-confirmations.json` — source-tagged reveals; `tier` is `confirmed` (Rockstar or a Rockstar developer on record) or `reported` (rating boards, journalist paraphrase, anonymous sources). Leaks are never added. `feature_category` adds a "+N October reveals" link on the Feature Tracker card; it does not change the curated counts in `features.json`.
+- `data/gta-6/music.json` — official radio stations (hosts, preview tracks from the `/VI/music` page payload), album singles, score. Rendered by `GtaViMusic.astro` on `/gta-vi/media`. Trailer-heard licensed songs stay in `soundtrack.json`. Audio comes only from official players, loaded on click: Rockstar's station embed (`rockstargames.com/VI/music/embed/{embed_key}/simple`) and Spotify embeds (`spotify_id`, taken from Rockstar's `gtavi-thealbum.lnk.to` links). Never re-host station or album audio in `public/`.
+- `data/gta-6/october-confirmations.json` — source-tagged reveals; `tier` is `confirmed` (Rockstar or a Rockstar developer on record) or `reported` (rating boards, journalist paraphrase, anonymous sources). Leaks are never added. Not rendered since v1.137.0 (kept as source data for facts and the planned illustrated news feed).
 
 ### GTA VI income predictions
 
-Edit `data/gta-6/income-predictions.json`. Schema version `1.0`. Rendered as `IncomeCard` on `/gta-vi/income` (full list) and `/gta-vi/predictions` (teaser).
+Edit `data/gta-6/income-predictions.json`. Schema version `1.0`. Rendered as `IncomeCard` on `/gta-vi/economy` (`#section-income-predictions`, 8 shown then "Show more").
 
 ```jsonc
 {

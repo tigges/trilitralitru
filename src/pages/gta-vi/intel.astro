@@ -1,33 +1,9 @@
 ---
 /**
- * /gta-vi/intel — retired in v1.136.0 and split into What we know, Predictions
- * and Music & radio. Old links carry section anchors, so the redirect reads
- * the hash client-side and sends each anchor to its new page. Without JS the
- * meta refresh lands on Predictions (the page's old menu label).
+ * /gta-vi/intel — retired in v1.136.0; its content now lives on Facts,
+ * Music & Video and Economy.
  */
-const SITE_BASE = import.meta.env.SITE ?? "https://gtavi.ai";
+import HashRedirect from "../../components/HashRedirect.astro";
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Moved — GTA VI.AI</title>
-    <meta name="robots" content="noindex" />
-    <link rel="canonical" href={`${SITE_BASE}/gta-vi/predictions`} />
-    <script is:inline>
-      (function () {
-        var hash = location.hash.slice(1);
-        var page = "/gta-vi/predictions";
-        if (/^income-pred-/.test(hash)) page = "/gta-vi/income";
-        else if (/^section-(music|soundtrack)$/.test(hash)) page = "/gta-vi/music";
-        else if (/^(oct-|feature-tracker$|section-(october|cast|feature-tracker|locations|vi-faq)$)/.test(hash)) page = "/gta-vi/confirmed";
-        location.replace(page + location.search + location.hash);
-      })();
-    </script>
-    <noscript><meta http-equiv="refresh" content="0; url=/gta-vi/predictions" /></noscript>
-  </head>
-  <body>
-    <p>This page has moved to <a href="/gta-vi/predictions">GTA VI Predictions</a>.</p>
-  </body>
-</html>
+<HashRedirect fallback="/gta-vi/facts" label="GTA VI Facts & Predictions" />

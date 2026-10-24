@@ -12,10 +12,9 @@
  *
  * Tokens only — no raw palette. Counts computed at build time from live JSON.
  */
-import predictionsData from "../config/predictions";
+import { FACTS, LAUNCH_PREDICTIONS } from "../config/facts";
 import incomeData from "../../data/gta-6/income-predictions.json";
 
-const predCount   = predictionsData.predictions.length;
 const incomeCount = (incomeData as any).income_predictions.length;
 
 interface Tile {
@@ -54,7 +53,7 @@ const tiles: Tile[] = [
     chart: true,
   },
   {
-    href: "/gta-vi/income",
+    href: "/gta-vi/economy#section-income-predictions",
     kicker: "GTA VI · Income",
     headline: "Day-1 income sources",
     sub: `${incomeCount} predicted GTA VI streams`,
@@ -84,10 +83,10 @@ const tiles: Tile[] = [
     op: 0.78,
   },
   {
-    href: "/gta-vi/predictions",
-    kicker: "GTA VI · Predictions",
-    headline: `${predCount} confidence-scored calls`,
-    sub: "Launch price, map size, income & more",
+    href: "/gta-vi/facts",
+    kicker: "GTA VI · Facts & Predictions",
+    headline: `${FACTS.length} facts, ${LAUNCH_PREDICTIONS.length} launch calls`,
+    sub: "Story, systems, money, cast & places",
     img: "/assets/gta6/characters/Lucia_Caminos_05.jpg",
     accent: "var(--c-title-vi)",
     pos: "center top",

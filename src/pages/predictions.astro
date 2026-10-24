@@ -1,4 +1,8 @@
 ---
-// Permanent redirect — this URL was the old predictions page.
-return Astro.redirect("/gta-vi/predictions", 301);
+/**
+ * /predictions — the old predictions page. Anchors map like /gta-vi/predictions.
+ */
+import HashRedirect from "../components/HashRedirect.astro";
 ---
+
+<HashRedirect fallback="/gta-vi/facts" label="GTA VI Facts & Predictions" />
