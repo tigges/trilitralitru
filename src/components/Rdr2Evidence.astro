@@ -9,6 +9,7 @@ import SectionHeader from "./SectionHeader.astro";
 import Badge from "./Badge.astro";
 import CardFooter from "./CardFooter.astro";
 import predictionsData from "../../data/gta-6/predictions.json";
+import { factHref } from "../config/facts";
 import mechanics from "../../data/rdr2/mechanics/index.json";
 import roles from "../../data/rdr2/economy/online-roles.json";
 import shop from "../../data/rdr2/economy/shop-prices.json";
@@ -60,7 +61,7 @@ const humanise = (k: string) => k.replace(/_/g, " ");
           {m.preds.length > 0 && (
             <div class="flex flex-wrap gap-2 mt-1">
               {m.preds.map((p) => (
-                <a href={`#${p.id}`} data-pred-link class="inline-flex items-center gap-1.5 text-[10px] font-mono text-zinc-300 hover:text-zinc-100">
+                <a href={factHref(p.id)} data-pred-link class="inline-flex items-center gap-1.5 text-[10px] font-mono text-zinc-300 hover:text-zinc-100">
                   <Badge variant={tierVariant(p.confidence_tier)} />
                   <span class="underline decoration-dotted">{p.title}</span>
                 </a>

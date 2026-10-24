@@ -22,6 +22,7 @@ import ExtendedLookStills from "./ExtendedLookStills.astro";
 import type { TrailersData, Prediction, TrailerVelocityData, TrailerAnalysisData } from "../types/gta";
 
 import predictionsData    from "../config/predictions";
+import { factHref } from "../config/facts";
 import steamData          from "../../data/gta-5/meta/steam-players.json";
 import trailersDataRaw    from "../../data/gta-6/trailers.json";
 import velocityDataRaw    from "../../data/gta-6/trailer-velocity.json";
@@ -105,8 +106,8 @@ const valueProps = [
     icon: "intel",
     title: "Confidence-scored predictions",
     body: "Every GTA VI call — launch price, map size, income — rated 0–100 and sourced. No hot takes, just signal.",
-    href: "/gta-vi/predictions",
-    cta: "See the predictions",
+    href: "/gta-vi/facts",
+    cta: "See facts & predictions",
     img: "/assets/gta6/artwork/grand-theft-auto-vi-screenshot-10-en-06may25.webp",
     accent: "var(--c-brand)",
   },
@@ -194,9 +195,9 @@ const keyStats = [
           <Countdown variant="hero" />
         </div>
         <div class="flex flex-wrap gap-3">
-          <a href="/gta-vi/predictions"
+          <a href="/gta-vi/facts"
             class="inline-flex items-center gap-2 bg-gta-gold hover:bg-gta-bright text-black font-mono font-bold text-xs px-5 py-3 rounded transition-colors tracking-wide uppercase">
-            Predictions →
+            Facts &amp; predictions →
           </a>
           <a href="/charts?title=gta-vi"
             class="inline-flex items-center gap-2 border border-gta-gold/40 hover:border-gta-gold text-gta-gold hover:text-gta-bright font-mono text-xs px-5 py-3 rounded transition-colors tracking-wide uppercase">
@@ -285,7 +286,7 @@ const keyStats = [
 
     <!-- PREDICTIONS — top signals -->
     <section>
-      <SectionHeader bright label="// GTA VI Predictions — confidence-scored" dotColor="var(--c-brand)" pillHref="/gta-vi/predictions" pillLabel="Full analysis →" />
+      <SectionHeader bright label="// GTA VI Predictions — confidence-scored" dotColor="var(--c-brand)" pillHref="/gta-vi/facts" pillLabel="Facts & predictions →" />
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {homePredictions.map((p: Prediction) => (
           <PredictionCard
@@ -307,7 +308,7 @@ const keyStats = [
             compact={true}
             game="gta-vi"
             short_value={(p as any).short_value ?? null}
-            detailHref={`/gta-vi/predictions#${p.id}`}
+            detailHref={factHref(p.id)}
           />
         ))}
       </div>
