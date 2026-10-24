@@ -3,7 +3,7 @@ import { SITE_VERSION_LABEL, SITE_VERSION_DATE } from "../config/version";
 import "../styles/tokens.css";
 import HudIcon from "../components/HudIcon.astro";
 import CrossLinks from "../components/CrossLinks.astro";
-import GtaViSubNav from "../components/GtaViSubNav.astro";
+import { GTA_VI_PAGES, gtaViPageFor, normalisePath } from "../config/facts";
 import weeklyBonusesRaw from "../../data/gta-5/economy/weekly-bonuses.json";
 
 interface Props {
@@ -104,15 +104,7 @@ const navGroups: NavGroup[] = [
     label: "GTA VI",
     activePaths: ["/gta-vi"],
     identityColor: "var(--c-title-vi)",
-    dropdown: [
-      { href: "/gta-vi",             iconName: "intel",   label: "Overview",      sub: "Countdown · latest reveals · what to read first" },
-      { href: "/gta-vi/confirmed",   iconName: "star",    label: "What we know",  sub: "October reveals · feature tracker · cast · places · FAQ" },
-      { href: "/gta-vi/predictions", iconName: "chart",   label: "Predictions",   sub: "Confidence-scored · confirmed, reported, predicted" },
-      { href: "/gta-vi/trailers",    iconName: "trailer", label: "Trailers",      sub: "Launch Trailer · Extended Look · Trailers 1–2 · spots" },
-      { href: "/gta-vi/music",       iconName: "nightclub", label: "Music & radio", sub: "Trailer songs · Rockstar station players · album" },
-      { href: "/gta-vi/economy",     iconName: "economy", label: "Economy",       sub: "Circular model · income sources · Shark Card" },
-      { href: "/gta-vi/buy",         iconName: "buy",     label: "Buy",           sub: "PS5 · Xbox Series X|S · editions · pre-orders" },
-    ],
+    dropdown: GTA_VI_PAGES.map((p) => ({ href: p.href, iconName: p.icon, label: p.label, sub: p.sub })),
   },
   {
     href: "/gta-online",
@@ -180,7 +172,30 @@ function isNavActive(group: NavGroup): boolean {
 }
 
 const currentPath = Astro.url.pathname;
-const showViSubNav = /^\/gta-vi(\/|$)/.test(currentPath) && !currentPath.startsWith("/gta-vi/intel");
+const herePath = normalisePath(currentPath);
+const viPage = gtaViPageFor(currentPath);
+const onBuyPage = herePath === "/gta-vi/buy";
+
+// "You are here" in the mega-panels. GTA VI tiles also cover their sub-pages
+// (e.g. the trailer briefs under Music & Video); query-string links never match.
+function isHere(item: DropdownItem): boolean {
+  if (GTA_VI_PAGES.some((p) => p.href === item.href)) return viPage?.href === item.href;
+  return !item.href.includes("?") && normalisePath(item.href) === herePath;
+}
+function hereTileStyle(item: DropdownItem, color: string): string {
+  return isHere(item)
+    ? `background:var(--c-card);border-color:color-mix(in srgb,${color} 55%,transparent)`
+    : "background:var(--c-card)";
+}
+
+// "More in GTA VI" — previous/next section page, cyclic, replaces CrossLinks
+// on the four GTA VI section pages.
+const viIndex = viPage && herePath === viPage.href ? GTA_VI_PAGES.findIndex((p) => p.href === viPage.href) : -1;
+const viPrev = viIndex >= 0 ? GTA_VI_PAGES[(viIndex + GTA_VI_PAGES.length - 1) % GTA_VI_PAGES.length] : null;
+const viNext = viIndex >= 0 ? GTA_VI_PAGES[(viIndex + 1) % GTA_VI_PAGES.length] : null;
+
+const LAUNCH_DATE_MS = Date.UTC(2026, 10, 19);
+const daysToLaunch = Math.max(0, Math.ceil((LAUNCH_DATE_MS - Date.now()) / 86_400_000));
 const fullTitle = title === "GTA VI.AI" ? "GTA VI.AI" : `${title} — GTA VI.AI`;
 ---
 
@@ -326,10 +341,11 @@ const fullTitle = title === "GTA VI.AI" ? "GTA VI.AI" : `${title} — GTA VI.AI`
           })}
         </nav>
 
-        <!-- Pre-order CTA (desktop) -->
+        <!-- Buy CTA (desktop) -->
         <a href="/gta-vi/buy"
-           class="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gta-vi-coral/30 text-gta-vi-coral text-xs font-mono tracking-wide hover:bg-gta-vi-coral/8 hover:border-gta-vi-coral/50 transition-all shrink-0">
-          Pre-order
+           aria-current={onBuyPage ? "page" : undefined}
+           class={`hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono tracking-wide transition-all shrink-0 ${onBuyPage ? "border-gta-vi-coral/60 bg-gta-vi-coral/10 text-white" : "border-gta-vi-coral/30 text-gta-vi-coral hover:bg-gta-vi-coral/8 hover:border-gta-vi-coral/50"}`}>
+          Buy GTA VI
         </a>
 
         <!-- Mobile grid-icon trigger -->
@@ -362,19 +378,30 @@ const fullTitle = title === "GTA VI.AI" ? "GTA VI.AI" : `${title} — GTA VI.AI`
            style="top:64px;background:color-mix(in srgb,var(--c-bg-deep) 98%,transparent);backdrop-filter:blur(20px)">
         <div class="h-0.5" style="background:linear-gradient(90deg,var(--c-title-vi),transparent)"></div>
         <div class="max-w-7xl mx-auto px-6 py-6">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
             {navGroups.find(g => g.label === "GTA VI")?.dropdown?.map(item => (
               <a href={item.href}
-                 class="group/pt flex items-start gap-4 p-4 rounded-xl border border-border-dim hover:border-border-mid hover:bg-white/[0.02] transition-all"
-                 style="background:var(--c-card)">
+                 aria-current={isHere(item) ? "page" : undefined}
+                 class={`group/pt flex items-start gap-4 p-4 rounded-xl border hover:bg-white/[0.02] transition-all ${isHere(item) ? "" : "border-border-dim hover:border-border-mid"}`}
+                 style={hereTileStyle(item, "var(--c-title-vi)")}>
                 <HudIcon name={item.iconName as any} size={20} class="text-zinc-500 group-hover/pt:text-zinc-300 transition-colors mt-0.5 shrink-0" />
                 <div>
                   <div class="text-sm font-semibold text-zinc-200 group-hover/pt:text-white transition-colors mb-1">{item.label}</div>
+                  {isHere(item) && <div class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color:var(--c-title-vi)">You are here</div>}
                   <div class="text-xs font-mono text-zinc-600 leading-snug">{item.sub}</div>
                 </div>
               </a>
             ))}
           </div>
+          <!-- Launch strip — the GTA VI section teases Buy rather than listing it -->
+          <a href="/gta-vi/buy"
+             class="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-border-dim hover:border-gta-vi-coral/40 transition-all group/bs flex-wrap"
+             style="background:color-mix(in srgb,var(--c-title-vi) 6%,var(--c-bg-deep))">
+            <span class="w-1.5 h-1.5 rounded-full bg-gta-vi-coral animate-pulse shrink-0"></span>
+            <span class="text-[11px] font-mono text-gta-vi-coral uppercase tracking-widest">Out Nov 19</span>
+            <span class="text-[11px] font-mono text-zinc-400">{daysToLaunch} days · PS5 · Xbox Series X|S · from $79.99</span>
+            <span class="ml-auto text-[10px] font-mono text-zinc-400 group-hover/bs:text-zinc-200 uppercase tracking-widest transition-colors">Buy GTA VI →</span>
+          </a>
         </div>
       </div>
 
@@ -387,11 +414,13 @@ const fullTitle = title === "GTA VI.AI" ? "GTA VI.AI" : `${title} — GTA VI.AI`
           <div class="grid grid-cols-3 gap-4 mb-4">
             {navGroups.find(g => g.label === "GTA Online")?.dropdown?.map(item => (
               <a href={item.href}
-                 class="group/pt flex items-start gap-4 p-4 rounded-xl border border-border-dim hover:border-border-mid hover:bg-white/[0.02] transition-all"
-                 style="background:var(--c-card)">
+                 aria-current={isHere(item) ? "page" : undefined}
+                 class={`group/pt flex items-start gap-4 p-4 rounded-xl border hover:bg-white/[0.02] transition-all ${isHere(item) ? "" : "border-border-dim hover:border-border-mid"}`}
+                 style={hereTileStyle(item, "var(--c-title-online)")}>
                 <HudIcon name={item.iconName as any} size={20} class="text-zinc-500 group-hover/pt:text-zinc-300 transition-colors mt-0.5 shrink-0" />
                 <div>
                   <div class="text-sm font-semibold text-zinc-200 group-hover/pt:text-white transition-colors mb-1">{item.label}</div>
+                  {isHere(item) && <div class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color:var(--c-title-online)">You are here</div>}
                   <div class="text-xs font-mono text-zinc-600 leading-snug">{item.sub}</div>
                 </div>
               </a>
@@ -418,11 +447,13 @@ const fullTitle = title === "GTA VI.AI" ? "GTA VI.AI" : `${title} — GTA VI.AI`
           <div class="grid grid-cols-3 gap-4 mb-5">
             {navGroups.find(g => g.label === "Franchise")?.dropdown?.map(item => (
               <a href={item.href}
-                 class="group/pt flex items-start gap-4 p-4 rounded-xl border border-border-dim hover:border-border-mid hover:bg-white/[0.02] transition-all"
-                 style="background:var(--c-card)">
+                 aria-current={isHere(item) ? "page" : undefined}
+                 class={`group/pt flex items-start gap-4 p-4 rounded-xl border hover:bg-white/[0.02] transition-all ${isHere(item) ? "" : "border-border-dim hover:border-border-mid"}`}
+                 style={hereTileStyle(item, "var(--c-brand)")}>
                 <HudIcon name={item.iconName as any} size={20} class="text-zinc-500 group-hover/pt:text-zinc-300 transition-colors mt-0.5 shrink-0" />
                 <div>
                   <div class="text-sm font-semibold text-zinc-200 group-hover/pt:text-white transition-colors mb-1">{item.label}</div>
+                  {isHere(item) && <div class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color:var(--c-brand)">You are here</div>}
                   <div class="text-xs font-mono text-zinc-600 leading-snug">{item.sub}</div>
                 </div>
               </a>
@@ -460,11 +491,13 @@ const fullTitle = title === "GTA VI.AI" ? "GTA VI.AI" : `${title} — GTA VI.AI`
           <div class="grid grid-cols-3 gap-4">
             {navGroups.find(g => g.label === "Data")?.dropdown?.map(item => (
               <a href={item.href}
-                 class="group/pt flex items-start gap-4 p-4 rounded-xl border border-border-dim hover:border-border-mid hover:bg-white/[0.02] transition-all"
-                 style="background:var(--c-card)">
+                 aria-current={isHere(item) ? "page" : undefined}
+                 class={`group/pt flex items-start gap-4 p-4 rounded-xl border hover:bg-white/[0.02] transition-all ${isHere(item) ? "" : "border-border-dim hover:border-border-mid"}`}
+                 style={hereTileStyle(item, "var(--c-text-4)")}>
                 <HudIcon name={item.iconName as any} size={20} class="text-zinc-500 group-hover/pt:text-zinc-300 transition-colors mt-0.5 shrink-0" />
                 <div>
                   <div class="text-sm font-semibold text-zinc-200 group-hover/pt:text-white transition-colors mb-1">{item.label}</div>
+                  {isHere(item) && <div class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color:var(--c-text-4)">You are here</div>}
                   <div class="text-xs font-mono text-zinc-600 leading-snug">{item.sub}</div>
                 </div>
               </a>
@@ -479,15 +512,32 @@ const fullTitle = title === "GTA VI.AI" ? "GTA VI.AI" : `${title} — GTA VI.AI`
            style="top:64px;background:color-mix(in srgb,var(--c-bg-deep) 60%,transparent)"></div>
     </header>
 
-    {showViSubNav && <GtaViSubNav path={currentPath} />}
-
     <!-- Main content area with background grid -->
     <main class="flex-1 bg-grid">
       <slot />
     </main>
 
+    <!-- GTA VI section pages: previous / next instead of Related Intelligence -->
+    {viPrev && viNext && (
+      <nav aria-label="More in GTA VI" class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-12 w-full">
+        <div class="flex items-center gap-2.5 mb-3">
+          <span class="w-1 h-4 rounded-sm" style="background:var(--c-title-vi)"></span>
+          <span class="text-[11px] font-mono uppercase tracking-[0.2em] text-zinc-400">// More in GTA VI</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[{ dir: "← Previous", page: viPrev }, { dir: "Next →", page: viNext }].map(({ dir, page }) => (
+            <a href={page.href} class={`group flex flex-col gap-1 p-4 rounded-xl border border-border-dim hover:border-border-mid transition-colors ${dir.startsWith("Next") ? "sm:text-right" : ""}`} style="background:var(--c-card)">
+              <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{dir}</span>
+              <span class="text-sm font-semibold text-zinc-200 group-hover:text-white transition-colors">{page.label}</span>
+              <span class="text-[11px] font-mono text-zinc-500">{page.sub}</span>
+            </a>
+          ))}
+        </div>
+      </nav>
+    )}
+
     <!-- Related Intelligence cross-link strip (omitted on admin/legal pages) -->
-    {crossLinksContext && (
+    {crossLinksContext && !(viPrev && viNext) && (
       <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-12">
         <CrossLinks context={crossLinksContext} />
       </div>
@@ -607,10 +657,10 @@ const fullTitle = title === "GTA VI.AI" ? "GTA VI.AI" : `${title} — GTA VI.AI`
           })}
         </div>
 
-        <!-- Pre-order CTA -->
+        <!-- Buy CTA -->
         <a href="/gta-vi/buy"
            class="flex items-center justify-center gap-2 mt-4 py-3 rounded-xl border border-gta-vi-coral/30 bg-gta-vi-coral/5 text-gta-vi-coral text-sm font-medium hover:bg-gta-vi-coral/10 transition-all">
-          Pre-order GTA VI
+          Buy GTA VI · out Nov 19
         </a>
 
         <!-- Live strip -->
