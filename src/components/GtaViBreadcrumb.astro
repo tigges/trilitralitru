@@ -1,0 +1,26 @@
+---
+/**
+ * GtaViBreadcrumb.astro — "GTA VI › Page" line at the top of each GTA VI
+ * section hero. Replaces the old pill sub-nav; siblings are reached through
+ * the GTA VI mega-panel and the "More in GTA VI" strip above the footer.
+ */
+interface Props {
+  current: string;
+  /** Optional middle crumb, e.g. Music & Video on a trailer brief */
+  parent?: { label: string; href: string };
+}
+
+const { current, parent } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class="flex items-center gap-1.5 mb-3 text-[10px] font-mono uppercase tracking-widest">
+  <a href="/gta-vi" class="text-zinc-400 hover:text-zinc-200 transition-colors">GTA VI</a>
+  {parent && (
+    <>
+      <span class="text-zinc-500" aria-hidden="true">›</span>
+      <a href={parent.href} class="text-zinc-400 hover:text-zinc-200 transition-colors">{parent.label}</a>
+    </>
+  )}
+  <span class="text-zinc-500" aria-hidden="true">›</span>
+  <span class="text-zinc-200" aria-current="page">{current}</span>
+</nav>

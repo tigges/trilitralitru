@@ -1,0 +1,41 @@
+---
+/**
+ * FactGrid.astro — 3-column grid of FactTiles. Tiles past `initial` start
+ * hidden behind a "Show N more" button (src/scripts/showMore.ts).
+ */
+import FactTile from "./FactTile.astro";
+import type { FactTileData } from "../config/facts";
+
+interface Props {
+  tiles: FactTileData[];
+  initial?: number;
+  /** Noun for the button, e.g. "facts" → "Show 6 more facts" */
+  noun?: string;
+}
+
+const { tiles, initial = tiles.length, noun = "tiles" } = Astro.props;
+const hiddenCount = Math.max(0, tiles.length - initial);
+---
+
+<div data-more-group>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    {tiles.map((t, i) => (
+      <div class={i >= initial ? "hidden" : undefined} data-more-item={i >= initial ? "" : undefined}>
+        <FactTile tile={t} />
+      </div>
+    ))}
+  </div>
+  {hiddenCount > 0 && (
+    <div class="flex justify-center mt-4" data-more-btn-wrap>
+      <button type="button" data-more-btn
+        class="px-4 py-2 rounded-lg border border-border-mid text-[11px] font-mono uppercase tracking-widest text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors">
+        Show {hiddenCount} more {noun}
+      </button>
+    </div>
+  )}
+  <noscript><style>[data-more-item]{display:block !important}[data-more-btn-wrap]{display:none}</style></noscript>
+</div>
+
+<script>
+  import "../scripts/showMore";
+</script>
