@@ -381,8 +381,8 @@ Three primitives. Use the right one for the context.
 
 | Context | Surface | Position |
 |---|---|---|
-| Top-left over thumbnail (game identity) | `opaque` | `absolute top-0 left-0` |
-| Top-right over thumbnail (confidence / tier) | `opaque` | `absolute top-0 right-0` |
+| Top-left over thumbnail (game identity) | `opaque` | Inset row: `absolute top-0 inset-x-0 flex justify-between` with the card body's horizontal padding (`px-3`/`px-4`) and `pt-2.5`/`pt-3`, so pills clear the rounded corner and align with the title |
+| Top-right over thumbnail (confidence / tier) | `opaque` | Same inset row, right end |
 | Inline header row (ChartBadgeRow, SectionHeader) | `tint` | Flex inline |
 | Inside card body (play type, region label) | Use `ColorLabel` — not Badge | Inline |
 | Chart filter / tab / toggle | Use `FilterPill` — not Badge | Flex inline |
