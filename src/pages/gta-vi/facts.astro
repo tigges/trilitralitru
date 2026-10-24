@@ -1,0 +1,171 @@
+---
+/**
+ * /gta-vi/facts — Facts & Predictions. Curated tiles from data/gta-6/facts.json:
+ * what Rockstar or the press has confirmed, three launch predictions, then the
+ * cast, Leonida's places and the FAQ. Money predictions live on /gta-vi/economy.
+ */
+import Base from "../../layouts/Base.astro";
+import SectionHeader from "../../components/SectionHeader.astro";
+import CastCard from "../../components/CastCard.astro";
+import Badge from "../../components/Badge.astro";
+import Countdown from "../../components/Countdown.astro";
+import FactGrid from "../../components/FactGrid.astro";
+import GtaViBreadcrumb from "../../components/GtaViBreadcrumb.astro";
+import { FACTS, LAUNCH_PREDICTIONS, MONEY_PREDICTIONS } from "../../config/facts";
+
+const nConfirmed = FACTS.filter((f) => f.tier === "confirmed").length;
+const nReported  = FACTS.filter((f) => f.tier === "reported").length;
+const factsLabel = `// Facts — ${nConfirmed} confirmed${nReported ? ` · ${nReported} reported` : ""}`;
+
+const gtaViFaqs = [
+  {
+    question: "Will GTA VI have GTA Online at launch?",
+    answer: "No. Rockstar describes GTA VI as a single-player experience at launch on November 19, 2026. GTA Online followed GTA V by two weeks in 2013; no date has been given for GTA VI's online mode.",
+  },
+  {
+    question: "Will GTA VI have Shark Cards?",
+    answer: "Rockstar has not published the GTA VI Online monetisation model. The rating line lists optional in-game purchases, and GTAVI.AI expects edition upgrades and add-on packs at launch, with Shark Cards or an equivalent GTA$ purchase arriving alongside Online.",
+  },
+  {
+    question: "Will GTA VI Online have businesses and passive income?",
+    answer: "Businesses and passive income are predicted because GTA Online's long-term economy relies on properties, enterprises and repeatable payouts. Confirmed GTA VI locations give Rockstar enough regional variety to reuse and expand that structure.",
+  },
+  {
+    question: "Does money matter in the GTA VI story?",
+    answer: "Yes. Store robberies trade speed against take, specialised fences convert loot, the WAINK app prices cars before you steal them, and IGN reports that some story beats may require you to raise a set amount first.",
+  },
+  {
+    question: "How much does GTA VI cost?",
+    answer: "Rockstar confirmed the Standard Edition at US$79.99 and the Ultimate Edition at US$99.99 for PS5 and Xbox Series X|S.",
+  },
+  {
+    question: "Are GTAVI.AI predictions official?",
+    answer: "No. GTAVI.AI separates confirmed, reported and predicted signals. Every tile shows its tier and the source behind it, so you can tell Rockstar information from model-derived forecasts.",
+  },
+] as const;
+
+const JUMP_LINKS = [
+  { href: "#section-facts",              label: "Facts" },
+  { href: "#section-launch-predictions", label: "Predictions" },
+  { href: "#section-cast",               label: "Cast" },
+  { href: "#section-locations",          label: "Places" },
+  { href: "#section-vi-faq",             label: "FAQ" },
+];
+
+const LOCATIONS = [
+  { name: "Vice City",     desc: "Urban hub — streets, nightlife, coast",     img: "Vice_City_04.jpg" },
+  { name: "Vice Beach",    desc: "Ocean Beach analogue, named in the EL",      img: "Vice_City_05.jpg" },
+  { name: "Ambrosia",      desc: "Outskirts and industry",                     img: "Ambrosia_02.jpg" },
+  { name: "Grassrivers",   desc: "Wetlands — Leonida's Everglades",            img: "Grassrivers_02.jpg" },
+  { name: "Leonida Keys",  desc: "Island chain south of Vice City",            img: "Leonida_Keys_03.jpg" },
+  { name: "Port Gellhorn", desc: "Industrial port district",                   img: "Port_Gellhorn_02.jpg" },
+  { name: "Mount Kalaga",  desc: "National park — mountainous interior",       img: "Mount_Kalaga_National_Park_04.jpg" },
+  { name: "Kelly County",  desc: "Rural county, named in the EL",              img: "Mount_Kalaga_National_Park_03.jpg" },
+  { name: "Hamlet",        desc: "Rural district, named in the EL",            img: "Grassrivers_01.jpg" },
+];
+---
+
+<Base
+  titleContext="gta-vi"
+  title="GTA VI Facts & Predictions"
+  description={`What we know about GTA VI — ${FACTS.length} facts from Rockstar and the press, ${LAUNCH_PREDICTIONS.length} launch predictions, the cast and Leonida's places. Every tile shows its source.`}
+  ogPage="vi-intel"
+>
+<script is:inline type="application/ld+json">{JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": gtaViFaqs.map((faq) => ({
+    "@type": "Question",
+    "name": faq.question,
+    "acceptedAnswer": { "@type": "Answer", "text": faq.answer },
+  })),
+})}</script>
+
+  <section class="relative overflow-hidden border-b border-border-dim">
+    <div class="absolute inset-0" aria-hidden="true">
+      <img src="/assets/gta6/locations/Vice_City_06.jpg" alt="" class="w-full h-full object-cover opacity-40" loading="eager" />
+    </div>
+    <div class="absolute inset-0" style="background:linear-gradient(to right,var(--c-bg) 0%,color-mix(in srgb,var(--c-bg) 70%,transparent) 60%,var(--c-bg) 100%)"></div>
+    <div class="absolute inset-0" style="background:linear-gradient(to bottom,transparent 50%,var(--c-bg) 100%)"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-10">
+      <GtaViBreadcrumb current="Facts & Predictions" />
+      <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">Facts &amp; Predictions</h1>
+      <p class="text-zinc-400 text-sm max-w-lg leading-relaxed mb-4">
+        What Rockstar or the press has confirmed about GTA VI, and what we expect at launch.
+        Open any tile for the source.
+      </p>
+      <div class="flex flex-wrap gap-2 mb-5">
+        {JUMP_LINKS.map((l) => (
+          <a href={l.href} class="text-[10px] font-mono uppercase tracking-widest border border-border-mid rounded px-2 py-0.5 text-zinc-400 hover:text-zinc-200 transition-colors">{l.label}</a>
+        ))}
+      </div>
+      <Countdown variant="hero" />
+    </div>
+  </section>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 flex flex-col gap-14">
+
+    <section id="section-facts" style="scroll-margin-top:80px">
+      <SectionHeader bright label={factsLabel} dotColor="var(--c-live)" pillHref="/intelligence" pillLabel="How we score →" />
+      <FactGrid tiles={FACTS} initial={12} noun="facts" />
+    </section>
+
+    <section id="section-launch-predictions" style="scroll-margin-top:80px">
+      <SectionHeader bright label="// Predictions — Launch" dotColor="var(--c-brand)" pillHref="/gta-vi/economy#section-money-predictions" pillLabel={`${MONEY_PREDICTIONS.length} money predictions on Economy →`} />
+      <FactGrid tiles={LAUNCH_PREDICTIONS} />
+    </section>
+
+    <section id="section-cast" style="scroll-margin-top:80px">
+      <SectionHeader bright label="// Cast" pillHref="/gta-vi/extended-look#el-ch-m1" pillLabel="Mission 1 notes →" />
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <CastCard name="Lucia Caminos"  role="Protagonist" img="Lucia_Caminos_01.jpg"  video="Lucia_Caminos_Video_Clip.mp4" note="From Liberty City" />
+        <CastCard name="Jason Duval"    role="Protagonist" img="Jason_Duval_01.jpg"    video="Jason_Duval_Video_Clip.mp4" />
+        <CastCard name="Raul Bautista"  role="Supporting"  img="Raul_Bautista_01.jpg"  video="Raul_Bautista_Video_Clip.mp4" note="The older mentor" />
+        <CastCard name="Boobie Ike"     role="Supporting"  img="Boobie_Ike_01.jpg"     video="Boobie_Ike_Video_Clip.mp4" />
+        <CastCard name="Brian Heder"    role="Supporting"  img="Brian_Heder_01.jpg"    video="Brian_Heder_Video_Clip.mp4" />
+        <CastCard name="Cal Hampton"    role="Supporting"  img="Cal_Hampton_01.jpg"    video="Cal_Hampton_Video_Clip.mp4" />
+        <CastCard name="DreQuan Priest" role="Supporting"  img="DreQuan_Priest_01.jpg" video="DreQuan_Priest_Video_Clip.mp4" />
+        <CastCard name="Real Dimez"     role="Supporting"  img="Real_Dimez_01.jpg"     video="Real_Dimez_Video_Clip.mp4" />
+      </div>
+      <p class="text-[11px] font-mono text-zinc-500 mt-3">
+        Also named in the Extended Look, no official portrait yet: Raymond · Ernesto · Méndez · Aunt Tee.
+      </p>
+    </section>
+
+    <section id="section-locations" style="scroll-margin-top:80px">
+      <SectionHeader bright label="// Places in Leonida" dotColor="var(--c-live)" pillHref="/gta-vi/extended-look#el-map" pillLabel="EL map stills →" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {LOCATIONS.map((loc) => (
+          <div class="group relative overflow-hidden rounded-xl border border-border-dim hover:border-border-mid transition-colors">
+            <div class="aspect-video overflow-hidden">
+              <img src={`/assets/gta6/locations/${loc.img}`} alt={loc.name} loading="lazy"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div class="absolute inset-0" style="background:linear-gradient(to top,var(--c-bg) 0%,color-mix(in srgb,var(--c-bg) 44%,transparent) 40%,transparent 70%)"></div>
+            </div>
+            <div class="absolute top-0 left-0"><Badge variant="gta-vi" surface="opaque" /></div>
+            <div class="absolute top-0 right-0"><Badge variant="confirmed" surface="opaque" /></div>
+            <div class="absolute bottom-0 left-0 right-0 px-4 pb-4">
+              <div class="text-sm font-bold text-white leading-tight">{loc.name}</div>
+              <div class="text-[11px] text-zinc-400 mt-0.5">{loc.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section id="section-vi-faq" style="scroll-margin-top:80px">
+      <SectionHeader bright label="// GTA VI FAQ" dotColor="var(--c-brand)" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {gtaViFaqs.map((faq) => (
+          <details class="group rounded-xl border border-border-dim overflow-hidden" style="background:var(--c-card-raised)">
+            <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer list-none marker:content-none [&::-webkit-details-marker]:hidden">
+              <h2 class="text-sm font-bold text-zinc-200 leading-snug">{faq.question}</h2>
+              <span class="text-zinc-500 text-xs font-mono shrink-0 transition-transform duration-150 group-open:rotate-180">&#9662;</span>
+            </summary>
+            <p class="px-5 pb-4 text-sm text-zinc-400 leading-relaxed">{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </div>
+</Base>

@@ -3,6 +3,7 @@
  * /gta-vi/extended-look — first-class visual brief for An Extended Look.
  */
 import Base from "../../layouts/Base.astro";
+import GtaViBreadcrumb from "../../components/GtaViBreadcrumb.astro";
 import Badge from "../../components/Badge.astro";
 import SectionHeader from "../../components/SectionHeader.astro";
 import ExtendedLookStills from "../../components/ExtendedLookStills.astro";
@@ -52,6 +53,7 @@ function fmtTime(t: number): string {
       <div class="absolute inset-0" style="background:linear-gradient(to bottom,var(--c-bg) 0%, transparent 30%, transparent 55%, var(--c-bg) 100%)"></div>
     </div>
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 pb-10 pt-16 w-full">
+      <GtaViBreadcrumb current="An Extended Look" parent={{ label: "Music & Video", href: "/gta-vi/media" }} />
       <div class="flex items-center gap-2 mb-3">
         <Badge variant="gta-vi" />
         <span class="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Official footage · Aug 27, 2026</span>
@@ -87,7 +89,7 @@ function fmtTime(t: number): string {
         bright
         label="// Story missions shown in the Extended Look"
         dotColor="var(--c-alert)"
-        pillHref="/gta-vi/income"
+        pillHref="/gta-vi/economy#section-income-predictions"
         pillLabel="Income model →"
       />
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
