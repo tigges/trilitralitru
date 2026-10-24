@@ -1,0 +1,42 @@
+---
+/**
+ * HashRedirect.astro — standalone redirect page for retired GTA VI URLs.
+ * Old links carry #anchors (prediction ids, October ids, section ids), which
+ * a server or meta redirect drops, so the hash is read client-side and mapped
+ * through REDIRECT_MAP. Unknown anchors land on `fallback`; without JS the
+ * meta refresh does the same.
+ */
+import { REDIRECT_MAP } from "../config/facts";
+
+interface Props {
+  fallback: string;
+  label: string;
+}
+
+const { fallback, label } = Astro.props;
+const SITE_BASE = import.meta.env.SITE ?? "https://gtavi.ai";
+const canonicalPath = fallback.split("#")[0];
+const map = REDIRECT_MAP;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Moved — GTA VI.AI</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={`${SITE_BASE}${canonicalPath}`} />
+    <script is:inline define:vars={{ map, fallback }}>
+      var hash = decodeURIComponent(location.hash.slice(1));
+      var target = Object.prototype.hasOwnProperty.call(map, hash) ? map[hash]
+        : /^income-pred-/.test(hash) ? "/gta-vi/economy#" + hash
+        : fallback;
+      var cut = target.indexOf("#");
+      location.replace(cut < 0 ? target + location.search : target.slice(0, cut) + location.search + target.slice(cut));
+    </script>
+    <noscript><meta http-equiv="refresh" content={`0; url=${fallback}`} /></noscript>
+  </head>
+  <body>
+    <p>This page has moved to <a href={fallback}>{label}</a>.</p>
+  </body>
+</html>
