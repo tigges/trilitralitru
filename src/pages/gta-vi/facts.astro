@@ -142,8 +142,10 @@ const LOCATIONS = [
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div class="absolute inset-0" style="background:linear-gradient(to top,var(--c-bg) 0%,color-mix(in srgb,var(--c-bg) 44%,transparent) 40%,transparent 70%)"></div>
             </div>
-            <div class="absolute top-0 left-0"><Badge variant="gta-vi" surface="opaque" /></div>
-            <div class="absolute top-0 right-0"><Badge variant="confirmed" surface="opaque" /></div>
+            <div class="absolute top-0 inset-x-0 flex items-center justify-between px-4 pt-3 z-10">
+              <Badge variant="gta-vi" surface="opaque" />
+              <Badge variant="confirmed" surface="opaque" />
+            </div>
             <div class="absolute bottom-0 left-0 right-0 px-4 pb-4">
               <div class="text-sm font-bold text-white leading-tight">{loc.name}</div>
               <div class="text-[11px] text-zinc-400 mt-0.5">{loc.desc}</div>
